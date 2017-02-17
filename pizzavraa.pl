@@ -30,7 +30,7 @@ column(M, N, Col) :-
     row(MT, N, Col).
 
 at(Row, Col, I):-
-    small(_, _, _, _, Pizza), 
+    input(_, _, _, _, Pizza), 
     row(Pizza, Row, IPartial),
     column([IPartial], Col, [I]).
 
@@ -84,7 +84,7 @@ getPizza(R1, R2, C1, C2, Pizza, PizzaR):-
 betw(I,J,I) :- I =< J.
 betw(I,J,K) :- I < J, I1 is I+1, betw(I1,J,K).
 
-solve:- small(R, C, L, H, Pizza),
+solve:- input(R, C, L, H, Pizza),
     betw(1, R, R1),
     betw(1, R, R2),
     betw(1, C, C1),
@@ -123,8 +123,10 @@ writeCool([H|T]):-list_empty(H), !, writeCool(T).
 writeCool([H|T]):-writeReallyCool(H), nl, writeCool(T).
 writeCool([]).
 
-pizza:-solve,
-    retract(slices(S)),
-    write(S), nl,
-    partialSolution(Sol),
-    writeCool(Sol), nl.
+pizza:-
+    consult("io.pl"),
+    readInputFile,
+    solve,
+    retract(slices(SliceCount)),
+    partialSolution(Solution),
+    writeOutputFile(SliceCount, Solution).
