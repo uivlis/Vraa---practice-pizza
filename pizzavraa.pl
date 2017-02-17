@@ -39,11 +39,11 @@ count([H|T], LP, LF):- atom(H), !, LP2 #= LP + 1, count(T, LP2, LF).
 count([H|T], LP, LF):-count(H, 0, LFR), LP2 #= LP + LFR, count(T, LP2, LF).
 
 countM([], LP, LP):-!.
-countM([H|T], LP, LF):- atom(H), H == m, !, LP2 #= LP + 1, countM(T, LP2, LF).
+countM([H|T], LP, LF):- atom(H), H #= m, !, LP2 #= LP + 1, countM(T, LP2, LF).
 countM([H|T], LP, LF):-countM(H, 0, LFR), LP2 #= LP + LFR, countM(T, LP2, LF).    
 
 countT([], LP, LP):-!.
-countT([H|T], LP, LF):- atom(H), H == t, !, LP2 #= LP + 1, countT(T, LP2, LF).
+countT([H|T], LP, LF):- atom(H), H #= t, !, LP2 #= LP + 1, countT(T, LP2, LF).
 countT([H|T], LP, LF):-countT(H, 0, LFR), LP2 #= LP + LFR, countT(T, LP2, LF).  
 
 :-dynamic(slices/1).
@@ -75,8 +75,8 @@ getPizza(R1, R2, C1, C2, Pizza, PizzaR):-
     getPizzaCols(C1, C2, PizzaR, PR).
 
 solve:- small(R, C, L, H, Pizza),
-    RR is R - 1,
-    CC is C - 1,
+    RR #= R - 1,
+    CC #= C - 1,
     [R1, R2] ins 0..RR,
     [C1, C2] ins 0..CC,
     R1 #=< R2,
@@ -91,7 +91,7 @@ solve:- small(R, C, L, H, Pizza),
     min(MPR, TPR) #>= L,
     assert(solution([[R1, R2, C1, C2]|Sol])),
     retract(slices(S)),
-    SP = S + 1,
+    SP #= S + 1,
     assert(slices(SP)),
     fail.
 solve.
