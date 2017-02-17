@@ -35,69 +35,84 @@ at(Row, Col, I):-
     column([IPartial], Col, [I]).
 
 count([], LP, LP):-!.
-count([H|T], LP, LF):- atom(H), !, LP2 #= LP + 1, count(T, LP2, LF).
-count([H|T], LP, LF):-count(H, 0, LFR), LP2 #= LP + LFR, count(T, LP2, LF).
+count([H|T], LP, LF):- atom(H), !, LP2 is LP + 1, count(T, LP2, LF).
+count([H|T], LP, LF):-count(H, 0, LFR), LP2 is LP + LFR, count(T, LP2, LF).
 
 countM([], LP, LP):-!.
-countM([H|T], LP, LF):- atom(H), H #= m, !, LP2 #= LP + 1, countM(T, LP2, LF).
-countM([H|T], LP, LF):-countM(H, 0, LFR), LP2 #= LP + LFR, countM(T, LP2, LF).    
+countM([H|T], LP, LF):- atom(H), H == m, !, LP2 is LP + 1, countM(T, LP2, LF).
+countM([H|T], LP, LF):- atom(H), H == t, !, countM(T, LP, LF).
+countM([H|T], LP, LF):-countM(H, 0, LFR), LP2 is LP + LFR, countM(T, LP2, LF).    
 
 countT([], LP, LP):-!.
-countT([H|T], LP, LF):- atom(H), H #= t, !, LP2 #= LP + 1, countT(T, LP2, LF).
-countT([H|T], LP, LF):-countT(H, 0, LFR), LP2 #= LP + LFR, countT(T, LP2, LF).  
+countT([H|T], LP, LF):- atom(H), H == t, !, LP2 is LP + 1, countT(T, LP2, LF).
+countT([H|T], LP, LF):- atom(H), H == m, !, countT(T, LP, LF).
+countT([H|T], LP, LF):-countT(H, 0, LFR), LP2 is LP + LFR, countT(T, LP2, LF).  
 
 :-dynamic(slices/1).
 slices(0).
 :-dynamic(solution/1).
 solution([]).
 
-nonoverlap([R11, R21, C11, C21], [R12, R22, C12, C22]):- R21 #=< R12, C21 #=< C12.
+
+nonoverlap([R11, R21, C11, C21], [R12, R22, C12, C22]):- R21 =< R12, C21 =< C12.
+nonoverlap([], _).
 
 coherent([H|T], NewSol):-nonoverlap(H, NewSol), coherent(T, NewSol).
 coherent([], _).
 
 getPizzaRows(R1, R2, [Row|PR], Pizza):-
-    R1 #=< R2,
-    R1P #= R1 + 1,
-    row(Pizza, R1P, Row),
-    getPizzaRows(R1P, R2, PR).
-getPizzaRows(_, _, []).
+    R1 =< R2, !,
+    row(Pizza, R1, Row),
+    R1P is R1 + 1,
+    getPizzaRows(R1P, R2, PR, Pizza).
+getPizzaRows(_, _, [], _).
 
 getPizzaCols(C1, C2, [Col|PC], PizzaRows):-
-    C1 #=< C2,
-    C1P #= C1 + 1,
-    row(PizzaRows, C1P, Col),
-    getPizzaCols(C1P, C2, PC).
-getPizzaCols(_, _, []).
+    C1 =< C2, !,
+    column(PizzaRows, C1, Col),
+    C1P is C1 + 1,
+    getPizzaCols(C1P, C2, PC, PizzaRows).
+getPizzaCols(_, _, [], _).
 
 getPizza(R1, R2, C1, C2, Pizza, PizzaR):-
     getPizzaRows(R1, R2, PR, Pizza),
     getPizzaCols(C1, C2, PizzaR, PR).
 
+betw(I,J,I) :- I =< J.
+betw(I,J,K) :- I < J, I1 is I+1, betw(I1,J,K).
+
 solve:- small(R, C, L, H, Pizza),
-    RR #= R - 1,
-    CC #= C - 1,
-    [R1, R2] ins 0..RR,
-    [C1, C2] ins 0..CC,
-    R1 #=< R2,
-    C1 #=< C2,
-    retract(solution(Sol)),
+    betw(1, R, R1),
+    betw(1, R, R2),
+    betw(1, C, C1),
+    betw(1, C, C2),
+    R1 =< R2,
+    C1 =< C2,
+  	partialSolution(Sol),
     coherent(Sol, [R1, R2, C1, C2]),
     getPizza(R1, R2, C1, C2, Pizza, PizzaR),
     count(PizzaR, 0, HPR),
-    HPR #=< H,
+    HPR =< H,
     countM(PizzaR, 0, MPR),
     countT(PizzaR, 0, TPR),
-    min(MPR, TPR) #>= L,
-    assert(solution([[R1, R2, C1, C2]|Sol])),
+    MIN is min(MPR, TPR),
+    MIN >= L,
+    assert(solution([R1, R2, C1, C2])),
     retract(slices(S)),
-    SP #= S + 1,
+    SP is S + 1,
     assert(slices(SP)),
     fail.
 solve.
 
+
+partialSolution([H|T]):-
+    retract(solution(H)), !,
+    partialSolution(T),
+    assert(solution(H)).
+partialSolution([]).
+
 pizza:-solve,
     retract(slices(S)),
     write(S), nl,
-    retract(solution(Sol)),
+    partialSolution(Sol),
     write(Sol).
