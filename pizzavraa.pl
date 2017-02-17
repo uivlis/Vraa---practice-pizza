@@ -54,7 +54,10 @@ slices(0).
 solution([]).
 
 
-nonoverlap([R11, R21, C11, C21], [R12, R22, C12, C22]):- R21 =< R12, C21 =< C12.
+nonoverlap([R11, R21, C11, C21], [R12, R22, C12, C22]):- C21 < C12, !.
+nonoverlap([R11, R21, C11, C21], [R12, R22, C12, C22]):- C11 > C22, !.
+nonoverlap([R11, R21, C11, C21], [R12, R22, C12, C22]):- R21 < R12, !.
+nonoverlap([R11, R21, C11, C21], [R12, R22, C12, C22]):- R11 > R22, !.
 nonoverlap([], _).
 
 coherent([H|T], NewSol):-nonoverlap(H, NewSol), coherent(T, NewSol).
