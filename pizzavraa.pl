@@ -51,7 +51,7 @@ slices(0).
 :-dynamic(solution/1).
 solution([]).
 
-nonoverlap([R11, R21, C11, C21], [R12, R22, C12, C22]):- R21 #=< R22, C21 #=< C22.
+nonoverlap([R11, R21, C11, C21], [R12, R22, C12, C22]):- R21 #=< R12, C21 #=< C12.
 
 coherent([H|T], NewSol):-nonoverlap(H, NewSol), coherent(T, NewSol).
 coherent([], _).
