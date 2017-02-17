@@ -114,8 +114,17 @@ partialSolution([H|T]):-
     assert(solution(H)).
 partialSolution([]).
 
+writeReallyCool([H|T]):-write(H), write(' '), writeReallyCool(T).
+writeReallyCool([]).
+
+list_empty([]).
+
+writeCool([H|T]):-list_empty(H), !, writeCool(T).
+writeCool([H|T]):-writeReallyCool(H), nl, writeCool(T).
+writeCool([]).
+
 pizza:-solve,
     retract(slices(S)),
     write(S), nl,
     partialSolution(Sol),
-    write(Sol).
+    writeCool(Sol), nl.
