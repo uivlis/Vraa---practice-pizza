@@ -1,10 +1,3 @@
-% Constraint Logic Programming
-:- use_module(library(dif)).		% Sound inequality
-:- use_module(library(clpfd)).		% Finite domain constraints
-:- use_module(library(clpb)).		% Boolean constraints
-:- use_module(library(chr)).		% Constraint Handling Rules
-:- use_module(library(when)).		% Coroutining
-
 small(6, 7, 1, 5, [[t, m, m, m, t, t, t],
 [m, m, m, m, t, m, m],
 [t, t, m, t, t, m, t],
@@ -86,12 +79,14 @@ betw(I,J,K) :- I < J, I1 is I+1, betw(I1,J,K).
 
 solve:- input(R, C, L, H, Pizza),
     betw(1, R, R1),
-    betw(1, R, R2),
     betw(1, C, C1),
-    betw(1, C, C2),
-    R1 =< R2,
-    C1 =< C2,
-  	partialSolution(Sol),
+    HR1 is H + R1,
+    HC1 is H + C1,
+    MAXR2 is min(HR1, R),
+    MAXC2 is min(HC1, C),
+    betw(R1, MAXR2, R2),
+    betw(C1, MAXC2, C2),
+    partialSolution(Sol),
     coherent(Sol, [R1, R2, C1, C2]),
     getPizza(R1, R2, C1, C2, Pizza, PizzaR),
     count(PizzaR, 0, HPR),
@@ -106,6 +101,7 @@ solve:- input(R, C, L, H, Pizza),
     assert(slices(SP)),
     fail.
 solve.
+
 
 
 partialSolution([H|T]):-
